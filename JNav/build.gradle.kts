@@ -55,7 +55,7 @@ dependencies {
 
 val GROUP_ID = "com.github.KJinL"
 val ARTIFACT_ID = "JNav"
-val VERSION = latestGitTag().ifEmpty { "1.0.0" }
+val VERSION = latestGitTag().ifEmpty { "1.0.1" }
 fun latestGitTag(): String {
     val process = ProcessBuilder("git", "describe", "--tags", "--abbrev=0").start()
     return  process.inputStream.bufferedReader().use {bufferedReader ->
