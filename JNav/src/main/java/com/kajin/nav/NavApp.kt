@@ -6,9 +6,11 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -17,6 +19,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.google.gson.Gson
@@ -30,19 +33,18 @@ object NavApp {
         NavChannel.navigate(destination)
     }
 
-
     fun back(
-        route: String? = null,
+        destination: Destination? = null,
         inclusive: Boolean = false,
         result: Any? = null
     ) {
         navigate(
-            NavIntent.Back(route, inclusive, result)
+            NavIntent.Back(destination?.route, inclusive, result)
         )
     }
 
     fun to(
-        route: String,
+        destination: Destination,
         popUpToRoute: String? = null,
         inclusive: Boolean = false,
         isSingleTop: Boolean = false,
@@ -50,28 +52,29 @@ object NavApp {
     ) {
         navigate(
             NavIntent.To(
-                route, popUpToRoute, inclusive, isSingleTop, params
+                destination.route, popUpToRoute, inclusive, isSingleTop, params
             )
         )
     }
 
+
     fun replace(
-        route: String,
+        destination: Destination,
         isSingleTop: Boolean = false,
         params: Any? = null
     ) {
         navigate(
             NavIntent.Replace(
-                route, isSingleTop, params
+                destination.route, isSingleTop, params
             )
         )
     }
 
     fun offAllTo(
-        route: String,
+        destination: Destination,
         params: Any? = null
     ) {
-        navigate(NavIntent.OffAllTo(route, params))
+        navigate(NavIntent.OffAllTo(destination.route, params))
     }
 }
 
@@ -83,6 +86,8 @@ sealed class NavIntent() {
      * @property route 指定目标
      * @property inclusive 是否弹出指定目标
      * @constructor
+     * 【"4"、"3"、"2"、"1"】 Back("2",true)->【"4"、"3"】
+     * 【"4"、"3"、"2"、"1"】 Back("2",false)->【"4"、"3"、"2"】
      */
     data class Back<T>(
         val route: String? = null,
@@ -96,6 +101,8 @@ sealed class NavIntent() {
      * @property route 指定目标
      * @property popUpToRoute 返回堆栈弹出到指定目标
      * @property inclusive 是否弹出指定popUpToRoute目标
+     * @property isSingleTop 是否是栈中单实例模式
+     * @constructor
      */
     data class To<T>(
         val route: String,
@@ -109,6 +116,7 @@ sealed class NavIntent() {
      * 替换当前导航/弹出当前导航并导航到指定目的地
      * @property route 当前导航
      * @property isSingleTop 是否是栈中单实例模式
+     * @constructor
      */
     data class Replace<T>(
         val route: String,
@@ -119,6 +127,7 @@ sealed class NavIntent() {
     /**
      * 清空导航栈并导航到指定目的地
      * @property route 指定目的地
+     * @constructor
      */
     data class OffAllTo<T>(
         val route: String,
@@ -191,13 +200,33 @@ fun NavController.handleComposeNavigationIntent(intent: NavIntent) {
     }
 }
 
+
+fun NavGraphBuilder.dialogWithDestination(
+    destination: Destination,
+    deepLinks: List<NavDeepLink> = emptyList(),
+    dialogProperties: DialogProperties = DialogProperties(),
+    content: @Composable (NavBackStackEntry) -> Unit
+) {
+    dialog(destination.route,destination.arguments, deepLinks, dialogProperties, content)
+}
+
 fun NavGraphBuilder.composableWithDestination(
     destination: Destination,
     deepLinks: List<NavDeepLink> = emptyList(),
     enterTransition: (@JvmSuppressWildcards
-    AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = null,
+    AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? = {
+        slideIntoContainer(
+            AnimatedContentTransitionScope.SlideDirection.Right,
+            animationSpec = tween(300)
+        )
+    },
     exitTransition: (@JvmSuppressWildcards
-    AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = null,
+    AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition?)? = {
+        slideOutOfContainer(
+            AnimatedContentTransitionScope.SlideDirection.Left,
+            animationSpec = tween(300)
+        )
+    },
     popEnterTransition: (@JvmSuppressWildcards
     AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition?)? =
         enterTransition,

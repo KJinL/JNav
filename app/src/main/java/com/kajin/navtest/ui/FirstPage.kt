@@ -31,14 +31,14 @@ fun FirstPage(result: String? = null) {
             Text(text = result)
         }
         Button(onClick = {
-            NavApp.to(SecondDestination.route)
+            NavApp.to(SecondDestination)
         }) {
             Text(text = "跳到第二页")
         }
-        Button(onClick = { NavApp.to(ThirdDestination.route, params = User("李二狗")) }) {
+        Button(onClick = { NavApp.to(ThirdDestination, params = User("李二狗")) }) {
             Text(text = "带参跳转第三页")
         }
-        Button(onClick = { NavApp.to(FourthDestination.route) }) {
+        Button(onClick = { NavApp.to(FourthDestination) }) {
             Text(text = "跳到第四页")
         }
     }

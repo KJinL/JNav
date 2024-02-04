@@ -22,7 +22,7 @@ JNav对安卓 jetpack compose navigation库进行了初步的封装，将原本�
 - 第二步
 
   ```kotlin
-  implementation ("com.github.KJinL:JNav:1.0.0")
+  implementation ("com.github.KJinL:JNav:1.0.1")
   ```
 
 
